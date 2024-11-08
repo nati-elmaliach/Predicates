@@ -9,3 +9,7 @@ class Predicate():
             data = json.loads(json_string)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON string: {e}")
+        
+        if not isinstance(data, dict):
+            raise ValueError('JSON must decode to a dictionary')
+        
