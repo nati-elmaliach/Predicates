@@ -8,7 +8,11 @@ from types import SimpleNamespace
 class Predicate():
     OPERATOR_MAP: Dict[str, Type[Operator]] = {
         "isNone": IsNoneOperator,
-        "isNotNone": IsNotNoneOperator
+        "isNotNone": IsNotNoneOperator,
+        "eqTo": EqualTo,
+        "notEqualTo": NotEqualTo,
+        "isLessThan": IsLessThan,
+        "isGreaterThan": IsGreaterThan
     }
 
     def __init__(self, feature_path: str, operation: Operator) -> None:
@@ -57,6 +61,9 @@ class Predicate():
 
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
+        elif issubclass(operator_class, BinaryOperator):
+            return operator_class(operator, operator["operand"]) 
+
         
     def _get_feature_value(self, root: object) -> Any:
         if self.feature_path == '':
