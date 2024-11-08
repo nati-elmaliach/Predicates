@@ -12,3 +12,7 @@ def test_valid_dict():
 def test_valid_dict_keys():
     with pytest.raises(ValueError):
         Predicate.from_json('''{"feature": ".x.y" }''')
+
+def test_feature_path():
+    with pytest.raises(ValueError):
+        Predicate.from_json('''{"feature": "x.y", "operation": {"operator": "isNotNone"}}''')
