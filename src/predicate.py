@@ -3,7 +3,7 @@ from typing import Any, Dict, Type
 import json
 import re
 from .operators import *
-
+from types import SimpleNamespace
 
 class Predicate():
     OPERATOR_MAP: Dict[str, Type[Operator]] = {
@@ -11,8 +11,8 @@ class Predicate():
         "isNotNone": IsNotNoneOperator
     }
 
-    def __init__(self, feature: str, operation: Any) -> None:
-        self.feature = feature
+    def __init__(self, feature_path: str, operation: Operator) -> None:
+        self.feature_path = feature_path
         self.operation = operation
 
     @classmethod
@@ -34,7 +34,6 @@ class Predicate():
         operation = cls._parse_operation(data["operation"])
 
         return cls(feature, operation)
-
 
     @classmethod
     def _validate_feature_path(cls, path: str) -> None:
@@ -58,6 +57,35 @@ class Predicate():
 
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
+        
+    def _get_feature_value(self, root: object) -> Any:
+        if self.feature_path == '':
+            return root
+
+        # Instead of using a library, this also give us a bit optimization
+        isDict = False
+        if isinstance(root, dict):
+            isDict = True
+
+        try:
+            current = root
+            for attr in self.feature_path.split('.')[1:]:
+                if isDict:
+                    current = current[attr]
+                else:
+                    current = getattr(current, attr)
+            return current
+        except AttributeError:
+            raise ValueError(f"Path does not exists {self.feature_path}")
+
+
+    def evaluate(self, root: object) -> bool:
+        # make sure the feature_path exists
+        feature_value = self._get_feature_value(root)
+        try:
+            return self.operation.evaluate(feature_value)
+        except Exception as e:
+            raise ValueError(e)
 
 
         
