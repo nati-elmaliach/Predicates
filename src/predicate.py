@@ -62,7 +62,7 @@ class Predicate():
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
         elif issubclass(operator_class, BinaryOperator):
-            return operator_class(operator, operator["operand"]) 
+            return operator_class(operator, operation_dict["operand"]) 
 
         
     def _get_feature_value(self, root: object) -> Any:

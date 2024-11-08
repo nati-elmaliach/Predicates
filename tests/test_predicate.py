@@ -43,6 +43,41 @@ def test_unary_isNotNone_False():
     assert result is False
 
 def test_binary_eqTo_True():
-    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "eqTo", operand: 5}}''')
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "eqTo", "operand": 5}}''')
     result = predicate.evaluate({ "x": { "y": 5} })
     assert result is True
+
+def test_binary_eqTo_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "eqTo", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 2} })
+    assert result is False
+
+def test_binary_notEqualTo_True():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "notEqualTo", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 1} })
+    assert result is True
+
+def test_binary_notEqualTo_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "notEqualTo", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 5} })
+    assert result is False
+
+def test_binary_isLessThan_True():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "isLessThan", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 1} })
+    assert result is True
+
+def test_binary_isLessThan_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "isLessThan", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is False
+
+def test_binary_isGreaterThan_True():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "isGreaterThan", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is True
+
+def test_binary_isGreaterThan_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "isGreaterThan", "operand": 5}}''')
+    result = predicate.evaluate({ "x": { "y": 1} })
+    assert result is False
