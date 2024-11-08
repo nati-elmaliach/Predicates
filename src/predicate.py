@@ -1,10 +1,16 @@
 from __future__ import annotations
+from typing import Any, Dict, Type
 import json
 import re
-from typing import Any
+from .operators import *
 
 
 class Predicate():
+    OPERATOR_MAP: Dict[str, Type[Operator]] = {
+        "isNone": IsNoneOperator,
+        "isNotNone": IsNotNoneOperator
+    }
+
     def __init__(self, feature: str, operation: Any) -> None:
         self.feature = feature
         self.operation = operation
@@ -23,8 +29,11 @@ class Predicate():
             raise ValueError("JSON must contain 'feature' and 'operation' fields")
 
         # TODO: more input validations
+        feature = data["feature"]
+        cls._validate_feature_path(feature)
+        operation = cls._parse_operation(data["operation"])
 
-        cls._validate_feature_path(data["feature"])
+        return cls(feature, operation)
 
 
     @classmethod
@@ -38,4 +47,19 @@ class Predicate():
                 "followed by valid attribute names"
             )
 
+    @classmethod
+    def _parse_operation(cls, operation_dict: Dict[str, Any]) -> Any:
+        operator = operation_dict["operator"]
+
+        if operator not in cls.OPERATOR_MAP:
+            raise ValueError(f"Unsupported operator: {operator}")
         
+        operator_class = cls.OPERATOR_MAP[operator]
+
+        if issubclass(operator_class, UnaryOperator):
+            return operator_class(operator)
+
+
+        
+
+
