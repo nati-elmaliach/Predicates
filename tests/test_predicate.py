@@ -81,3 +81,23 @@ def test_binary_isGreaterThan_False():
     predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "isGreaterThan", "operand": 5}}''')
     result = predicate.evaluate({ "x": { "y": 1} })
     assert result is False
+
+def test_group_and_True():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "and", "operations": [ {"operator": "isNotNone"}, {"operator": "isLessThan", "operand": 9 } ]}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is True
+
+def test_group_and_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "and", "operations": [ {"operator": "isNotNone"}, {"operator": "isGreaterThan", "operand": 9 } ]}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is False
+
+def test_group_or_True():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "or", "operations": [ {"operator": "notEqualTo", "operand": 1}, {"operator": "isLessThan", "operand": 1 } ]}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is True
+
+def test_group_or_False():
+    predicate = Predicate.from_json('''{"feature": ".x.y", "operation": {"operator": "or", "operations": [ {"operator": "eqTo", "operand": 9}, {"operator": "isGreaterThan", "operand": 9 } ]}}''')
+    result = predicate.evaluate({ "x": { "y": 6} })
+    assert result is False

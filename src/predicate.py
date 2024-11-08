@@ -12,7 +12,9 @@ class Predicate():
         "eqTo": EqualTo,
         "notEqualTo": NotEqualTo,
         "isLessThan": IsLessThan,
-        "isGreaterThan": IsGreaterThan
+        "isGreaterThan": IsGreaterThan,
+        "and": AndOperator,
+        "or": OrOperator
     }
 
     def __init__(self, feature_path: str, operation: Operator) -> None:
@@ -61,9 +63,20 @@ class Predicate():
 
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
+        
         elif issubclass(operator_class, BinaryOperator):
-            return operator_class(operator, operation_dict["operand"]) 
-
+            if "operand" not in operation_dict: # TODO add a unit test
+                raise ValueError(f"Binary operator {operator} requires an operand")
+            return operator_class(operator, operation_dict["operand"])
+        
+        elif issubclass(operator_class, GroupOperator):
+            if "operations" not in operation_dict:
+                raise ValueError(f"Group operator {operator} requires operations list")
+            operations = [cls._parse_operation(op) for op in operation_dict["operations"]]
+            return operator_class(operator, operations)
+        
+        else:
+            raise ValueError(f"Unknown operator type: {operator}")
         
     def _get_feature_value(self, root: object) -> Any:
         if self.feature_path == '':
