@@ -14,7 +14,7 @@ class EqualTo(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value == self.operand
     
-class NotEqualTo(BinaryOperator):
+class notEqTo(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value != self.operand
     
