@@ -2,7 +2,7 @@
 This project provides a Dockerized environment to simplify setup and execution.
 
 ## How to run
-Build & Run: `docker build -t predicate .` & `docker run predicate remote|tests `
+Build & Run: `docker build -t predicate .` & `docker run predicate remote|test `
 
 The application accepts one of two modes as an argument:
  - test: Although not strictly necessary, i found it much easier to write tests to validate the logic.
