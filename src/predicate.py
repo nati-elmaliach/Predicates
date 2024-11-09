@@ -88,10 +88,7 @@ class Predicate:
             return root
 
         # Instead of using a library, this also give us a bit optimization
-        isDict = False
-        if isinstance(root, dict):
-            isDict = True
-
+        isDict = isinstance(root, dict)
         try:
             current = root
             for attr in self.feature_path.split(".")[1:]:
