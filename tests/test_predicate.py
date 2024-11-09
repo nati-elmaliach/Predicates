@@ -7,35 +7,41 @@ import pytest
 from src import Predicate
 
 
-def test_invalid_json():
+def test_invalid_json_format():
     with pytest.raises(ValueError):
         Predicate.from_json("invalid json")
 
 
-def test_valid_dict():
+def test_json_array_instead_of_dict():
     with pytest.raises(ValueError):
         Predicate.from_json("[]")
 
 
-def test_valid_dict_keys():
+def test_missing_required_keys():
     with pytest.raises(ValueError):
         Predicate.from_json("""{"feature": ".x.y" }""")
 
 
-def test_feature_path():
+def test_invalid_feature_path_format():
     with pytest.raises(ValueError):
         Predicate.from_json(
             """{"feature": "x.y", "operation": {"operator": "isNotNone"}}"""
         )
 
 
-def test_invalid_operation():
+def test_invalid_operation_type():
     with pytest.raises(ValueError):
         Predicate.from_json("""{"feature": ".x.y", "operation": {"operator": "xor"}}""")
 
 
-# Also test for dict as input
-def test_unary_isNone():
+def test_invalid_feature_type():
+    with pytest.raises(ValueError):
+        Predicate.from_json(
+            """{"feature": 5, "operation": {"operator": "isNotNone"}}"""
+        )
+
+
+def test_evaluate_isNone_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isNone"}}"""
     )
@@ -43,7 +49,7 @@ def test_unary_isNone():
     assert result is True
 
 
-def test_unary_isNone_False():
+def test_evaluate_isNone_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isNone"}}"""
     )
@@ -51,7 +57,7 @@ def test_unary_isNone_False():
     assert result is False
 
 
-def test_unary_isNotNone_True():
+def test_evaluate_isNotNone_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isNotNone"}}"""
     )
@@ -59,7 +65,7 @@ def test_unary_isNotNone_True():
     assert result is True
 
 
-def test_unary_isNotNone_False():
+def test_evaluate_isNotNone_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isNotNone"}}"""
     )
@@ -67,7 +73,7 @@ def test_unary_isNotNone_False():
     assert result is False
 
 
-def test_binary_eqTo_True():
+def test_evaluate_eqTo_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "eqTo", "operand": 5}}"""
     )
@@ -75,7 +81,7 @@ def test_binary_eqTo_True():
     assert result is True
 
 
-def test_binary_eqTo_False():
+def test_evaluate_eqTo_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "eqTo", "operand": 5}}"""
     )
@@ -83,7 +89,7 @@ def test_binary_eqTo_False():
     assert result is False
 
 
-def test_binary_notEqTo_True():
+def test_evaluate_notEqTo_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "notEqTo", "operand": 5}}"""
     )
@@ -91,7 +97,7 @@ def test_binary_notEqTo_True():
     assert result is True
 
 
-def test_binary_notEqTo_False():
+def test_evaluate_notEqTo_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "notEqTo", "operand": 5}}"""
     )
@@ -99,7 +105,7 @@ def test_binary_notEqTo_False():
     assert result is False
 
 
-def test_binary_isLessThan_True():
+def test_evaluate_isLessThan_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isLessThan", "operand": 5}}"""
     )
@@ -107,7 +113,7 @@ def test_binary_isLessThan_True():
     assert result is True
 
 
-def test_binary_isLessThan_False():
+def test_evaluate_isLessThan_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isLessThan", "operand": 5}}"""
     )
@@ -115,7 +121,7 @@ def test_binary_isLessThan_False():
     assert result is False
 
 
-def test_binary_isGreaterThan_True():
+def test_evaluate_isGreaterThan_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isGreaterThan", "operand": 5}}"""
     )
@@ -123,7 +129,7 @@ def test_binary_isGreaterThan_True():
     assert result is True
 
 
-def test_binary_isGreaterThan_False():
+def test_evaluate_isGreaterThan_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "isGreaterThan", "operand": 5}}"""
     )
@@ -131,7 +137,7 @@ def test_binary_isGreaterThan_False():
     assert result is False
 
 
-def test_group_and_True():
+def test_evaluate_and_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "and", "operations": [ {"operator": "isNotNone"}, {"operator": "isLessThan", "operand": 9 } ]}}"""
     )
@@ -139,7 +145,7 @@ def test_group_and_True():
     assert result is True
 
 
-def test_group_and_False():
+def test_evaluate_and_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "and", "operations": [ {"operator": "isNotNone"}, {"operator": "isGreaterThan", "operand": 9 } ]}}"""
     )
@@ -147,7 +153,7 @@ def test_group_and_False():
     assert result is False
 
 
-def test_group_or_True():
+def test_evaluate_or_operator_true():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "or", "operations": [ {"operator": "notEqTo", "operand": 1}, {"operator": "isLessThan", "operand": 1 } ]}}"""
     )
@@ -155,7 +161,7 @@ def test_group_or_True():
     assert result is True
 
 
-def test_group_or_False():
+def test_evaluate_or_operator_false():
     predicate = Predicate.from_json(
         """{"feature": ".x.y", "operation": {"operator": "or", "operations": [ {"operator": "eqTo", "operand": 9}, {"operator": "isGreaterThan", "operand": 9 } ]}}"""
     )
@@ -163,7 +169,7 @@ def test_group_or_False():
     assert result is False
 
 
-def test_dataclass_objects():
+def test_evaluate_dataclass_feature_equality():
     @dataclass
     class User:
         name: str
@@ -186,19 +192,7 @@ def test_dataclass_objects():
     assert pred.evaluate(g) is False
 
 
-def test_complex_examples():
-    # Check if a number is:
-    # Level 1 (AND):
-    #   - not null AND
-    #   - Level 2 (OR):
-    #       - exactly 100 OR
-    #       - Level 3 (AND):
-    #           - greater than 0 AND
-    #           - less than 50 AND
-    #           - not equal to 25
-    #       - Level 3 (AND):
-    #           - greater than 75 AND
-    #           - less than 90
+def test_evaluate_complex_nested_operations():
     deep_nested = {
         "feature": ".value",
         "operation": {

@@ -2,9 +2,14 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, TypedDict, cast
 
 from .operators import *
+
+
+class PredicateData(TypedDict):
+    feature: str
+    operation: Dict[str, Any]
 
 
 class Predicate:
@@ -25,6 +30,16 @@ class Predicate:
 
     @classmethod
     def from_json(cls, json_string: str) -> Predicate:
+        data = cls.parse_json(json_string)
+        feature, operation_dict = data["feature"], data["operation"]
+
+        cls._validate_feature_path(feature)
+        operation = cls._parse_operation(operation_dict)
+
+        return cls(feature, operation)
+
+    @classmethod
+    def parse_json(cls, json_string: str) -> PredicateData:
         try:
             data = json.loads(json_string)
         except json.JSONDecodeError as e:
@@ -36,12 +51,14 @@ class Predicate:
         if "feature" not in data or "operation" not in data:
             raise ValueError("JSON must contain 'feature' and 'operation' fields")
 
-        # TODO: more input validations
-        feature = data["feature"]
-        cls._validate_feature_path(feature)
-        operation = cls._parse_operation(data["operation"])
+        if not isinstance(data["feature"], str) or not isinstance(
+            data["operation"], dict
+        ):
+            raise ValueError(
+                "'feature' must be a string and 'operation' must be a dict"
+            )
 
-        return cls(feature, operation)
+        return cast(PredicateData, data)
 
     @classmethod
     def _validate_feature_path(cls, path: str) -> None:
@@ -56,7 +73,7 @@ class Predicate:
             )
 
     @classmethod
-    def _parse_operation(cls, operation_dict: Dict[str, Any]) -> Any:
+    def _parse_operation(cls, operation_dict: Dict[str, Any]) -> Operator:
         operator = operation_dict["operator"]
 
         if operator not in cls.OPERATOR_MAP:
@@ -67,12 +84,12 @@ class Predicate:
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
 
-        elif issubclass(operator_class, BinaryOperator):
-            if "operand" not in operation_dict:  # TODO add a unit test
+        if issubclass(operator_class, BinaryOperator):
+            if "operand" not in operation_dict:
                 raise ValueError(f"Binary operator {operator} requires an operand")
             return operator_class(operator, operation_dict["operand"])
 
-        elif issubclass(operator_class, GroupOperator):
+        if issubclass(operator_class, GroupOperator):
             if "operations" not in operation_dict:
                 raise ValueError(f"Group operator {operator} requires operations list")
             operations = [
@@ -80,28 +97,25 @@ class Predicate:
             ]
             return operator_class(operator, operations)
 
-        else:
-            raise ValueError(f"Unknown operator type: {operator}")
+        raise ValueError(f"Unknown operator type: {operator}")
 
     def _get_feature_value(self, root: object) -> Any:
-        if self.feature_path == "":
-            return root
+        if not self.feature_path:
+            return root  # Test against root
 
-        # Instead of using a library, this also give us a bit optimization
-        isDict = isinstance(root, dict)
-        try:
-            current = root
-            for attr in self.feature_path.split(".")[1:]:
-                if isDict:
+        current = root
+        for attr in self.feature_path.split(".")[1:]:
+            try:
+                if isinstance(current, dict):
                     current = current[attr]
                 else:
                     current = getattr(current, attr)
-            return current
-        except AttributeError:
-            raise ValueError(f"Path does not exists {self.feature_path}")
+            except AttributeError:
+                raise ValueError(f"Path does not exists {self.feature_path}")
+
+        return current
 
     def evaluate(self, root: object) -> bool:
-        # make sure the feature_path exists
         feature_value = self._get_feature_value(root)
         try:
             return self.operation.evaluate(feature_value)

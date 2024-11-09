@@ -51,8 +51,10 @@ class RemotePredicateResource:
                 data = await response.text()
                 print(f"Received predicate data: {data}")
                 self._current_predicate = Predicate.from_json(data)
+                print(
+                    f"Predicate evaluate result: {self._current_predicate.evaluate(test_user)}"
+                )
                 self._etag = response.headers.get("ETag")
-                self.log()
 
     async def _update_loop(self) -> None:
         while True:
@@ -65,9 +67,6 @@ class RemotePredicateResource:
 
     async def _start_background_task(self) -> None:
         self._update_task = asyncio.create_task(self._update_loop())
-
-    def log(self):
-        print(self._current_predicate.evaluate(test_user))
 
     @property
     def predicate(self) -> Predicate:
