@@ -6,6 +6,8 @@ from server import run_server
 
 async def main():
     run_server()  # Runs on a different Therad
+
+    # TODO set interval as ENV
     await RemotePredicateResource.from_env(5)  # We can assign it to a variable and use it if we want
 
     try:
