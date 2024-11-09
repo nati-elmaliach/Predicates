@@ -17,7 +17,7 @@ class Predicate:
         "isNone": IsNoneOperator,
         "isNotNone": IsNotNoneOperator,
         "eqTo": EqualTo,
-        "notEqTo": notEqTo,
+        "notEqTo": NotEqTo,
         "isLessThan": IsLessThan,
         "isGreaterThan": IsGreaterThan,
         "and": AndOperator,
