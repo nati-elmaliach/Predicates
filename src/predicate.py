@@ -1,11 +1,13 @@
 from __future__ import annotations
-from typing import Any, Dict, Type
+
 import json
 import re
-from .operators import *
-from types import SimpleNamespace
+from typing import Any, Dict, Type
 
-class Predicate():
+from .operators import *
+
+
+class Predicate:
     OPERATOR_MAP: Dict[str, Type[Operator]] = {
         "isNone": IsNoneOperator,
         "isNotNone": IsNotNoneOperator,
@@ -14,7 +16,7 @@ class Predicate():
         "isLessThan": IsLessThan,
         "isGreaterThan": IsGreaterThan,
         "and": AndOperator,
-        "or": OrOperator
+        "or": OrOperator,
     }
 
     def __init__(self, feature_path: str, operation: Operator) -> None:
@@ -29,8 +31,8 @@ class Predicate():
             raise ValueError(f"Invalid JSON string: {e}")
 
         if not isinstance(data, dict):
-            raise ValueError('JSON must decode to a dictionary')
-        
+            raise ValueError("JSON must decode to a dictionary")
+
         if "feature" not in data or "operation" not in data:
             raise ValueError("JSON must contain 'feature' and 'operation' fields")
 
@@ -43,9 +45,10 @@ class Predicate():
 
     @classmethod
     def _validate_feature_path(cls, path: str) -> None:
-        if path == '': return # Test against root
+        if path == "":
+            return  # Test against root
 
-        pattern = r'^(\.[a-zA-Z][a-zA-Z0-9_]*)*$'
+        pattern = r"^(\.[a-zA-Z][a-zA-Z0-9_]*)*$"
         if not re.match(pattern, path):
             raise ValueError(
                 f"Invalid feature path: {path}. Must be empty or start with '.' "
@@ -58,28 +61,30 @@ class Predicate():
 
         if operator not in cls.OPERATOR_MAP:
             raise ValueError(f"Unsupported operator: {operator}")
-        
+
         operator_class = cls.OPERATOR_MAP[operator]
 
         if issubclass(operator_class, UnaryOperator):
             return operator_class(operator)
-        
+
         elif issubclass(operator_class, BinaryOperator):
-            if "operand" not in operation_dict: # TODO add a unit test
+            if "operand" not in operation_dict:  # TODO add a unit test
                 raise ValueError(f"Binary operator {operator} requires an operand")
             return operator_class(operator, operation_dict["operand"])
-        
+
         elif issubclass(operator_class, GroupOperator):
             if "operations" not in operation_dict:
                 raise ValueError(f"Group operator {operator} requires operations list")
-            operations = [cls._parse_operation(op) for op in operation_dict["operations"]]
+            operations = [
+                cls._parse_operation(op) for op in operation_dict["operations"]
+            ]
             return operator_class(operator, operations)
-        
+
         else:
             raise ValueError(f"Unknown operator type: {operator}")
-        
+
     def _get_feature_value(self, root: object) -> Any:
-        if self.feature_path == '':
+        if self.feature_path == "":
             return root
 
         # Instead of using a library, this also give us a bit optimization
@@ -89,7 +94,7 @@ class Predicate():
 
         try:
             current = root
-            for attr in self.feature_path.split('.')[1:]:
+            for attr in self.feature_path.split(".")[1:]:
                 if isDict:
                     current = current[attr]
                 else:
@@ -98,7 +103,6 @@ class Predicate():
         except AttributeError:
             raise ValueError(f"Path does not exists {self.feature_path}")
 
-
     def evaluate(self, root: object) -> bool:
         # make sure the feature_path exists
         feature_value = self._get_feature_value(root)
@@ -106,8 +110,3 @@ class Predicate():
             return self.operation.evaluate(feature_value)
         except Exception as e:
             raise ValueError(e)
-
-
-        
-
-

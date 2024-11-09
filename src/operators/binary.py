@@ -1,6 +1,5 @@
-
-
 from typing import Any
+
 from src.operators.base import Operator
 
 
@@ -13,11 +12,13 @@ class BinaryOperator(Operator):
 class EqualTo(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value == self.operand
-    
+
+
 class notEqTo(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value != self.operand
-    
+
+
 class IsLessThan(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value < self.operand
@@ -26,4 +27,3 @@ class IsLessThan(BinaryOperator):
 class IsGreaterThan(BinaryOperator):
     def evaluate(self, value: Any) -> bool:
         return value > self.operand
-
