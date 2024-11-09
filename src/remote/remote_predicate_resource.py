@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import asyncio
 import os
 from typing import Optional
@@ -7,6 +8,7 @@ import aiohttp
 from data import test_user
 
 from src import Predicate
+
 
 class RemotePredicateResource:
     """A resource that periodically fetches a predicate from a remote service."""
