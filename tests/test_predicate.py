@@ -40,6 +40,12 @@ def test_invalid_feature_type():
             """{"feature": 5, "operation": {"operator": "isNotNone"}}"""
         )
 
+def test_feature_does_not_exists():
+    predicate = Predicate.from_json(
+        """{"feature": ".x.y.z", "operation": {"operator": "isNotNone"}}"""
+    )
+    result = predicate.evaluate({"x": {"y": 5}})
+    assert result is False
 
 def test_evaluate_isNone_operator_true():
     predicate = Predicate.from_json(

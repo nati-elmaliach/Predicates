@@ -111,12 +111,17 @@ class Predicate:
                 else:
                     current = getattr(current, attr)
             except AttributeError:
-                raise ValueError(f"Path does not exists {self.feature_path}")
+                raise AttributeError(f"Path does not exists {self.feature_path}")
 
         return current
 
     def evaluate(self, root: object) -> bool:
-        feature_value = self._get_feature_value(root)
+        try:
+            feature_value = self._get_feature_value(root)
+        except AttributeError:
+            # If a feature does not exist, return False as the predicate fails.
+            return False
+
         try:
             return self.operation.evaluate(feature_value)
         except Exception as e:
