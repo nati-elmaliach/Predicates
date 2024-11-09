@@ -1,7 +1,5 @@
 from __future__ import annotations
-
 import asyncio
-import logging
 import os
 from typing import Optional
 
@@ -9,9 +7,6 @@ import aiohttp
 from data import test_user
 
 from src import Predicate
-
-logger = logging.getLogger(__name__)
-
 
 class RemotePredicateResource:
     """A resource that periodically fetches a predicate from a remote service."""
@@ -35,7 +30,7 @@ class RemotePredicateResource:
         # Initial fetch
         await resource._fetch_predicate()
         # Start background updates
-        resource._start_background_task()
+        await resource._start_background_task()
 
         return resource
 
@@ -47,12 +42,12 @@ class RemotePredicateResource:
                 f"{self._url}/api/v1/predicate", headers=headers
             ) as response:
                 if response.status == 304:  # Not Modified
-                    print("Not modified")
+                    print("Predicate not modified")
                     return
 
                 response.raise_for_status()
                 data = await response.text()
-                print(data)
+                print(f"Received predicate data: {data}")
                 self._current_predicate = Predicate.from_json(data)
                 self._etag = response.headers.get("ETag")
                 self.log()
@@ -62,10 +57,11 @@ class RemotePredicateResource:
             try:
                 await asyncio.sleep(self.interval_in_sec)  # Wait for interval
                 await self._fetch_predicate()
-            except Exception as e:
-                logger.error(f"Error updating predicate: {e}")
+            except asyncio.CancelledError:
+                print("Update loop cancelled")
+                break
 
-    def _start_background_task(self) -> None:
+    async def _start_background_task(self) -> None:
         self._update_task = asyncio.create_task(self._update_loop())
 
     def log(self):

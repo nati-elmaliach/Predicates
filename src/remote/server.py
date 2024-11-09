@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 
 def generate_etag(data: Dict[str, Any]) -> str:
-    """Generate an ETag from the data using a hash function."""
     data_str = json.dumps(data, sort_keys=True)
     return hashlib.md5(data_str.encode()).hexdigest()
 

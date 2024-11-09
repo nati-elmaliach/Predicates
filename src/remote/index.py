@@ -5,11 +5,13 @@ from server import run_server
 
 
 async def main():
-    run_server()
-    await RemotePredicateResource.from_env(5)
+    run_server() # Runs on a different Therad
+    predicate_resource = await RemotePredicateResource.from_env(5)
 
-    while True:
-        await asyncio.sleep(1)  # Sleep in small intervals to keep the loop running
-
+    try:
+        # Keep the main coroutine running, This will never complete
+        await asyncio.Future() 
+    except asyncio.CancelledError:
+        print('Task Cancel')
 
 asyncio.run(main())
