@@ -7,11 +7,18 @@ ENV PREDICATE_SERVICE_URL=http://localhost:5000
 # Set working directory
 WORKDIR /app
 
+# Copy only the requirements file and install dependencies
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
 # Copy the application files to the container
 COPY . /app
+
+# Set permissions for the entrypoint script
+RUN chmod +x /app/entrypoint.sh
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Specify the command to run the application
-CMD ["python3", "src/remote/index.py"]
+# Use the entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]
